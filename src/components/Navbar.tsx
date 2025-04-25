@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,9 +15,9 @@ const Navbar = () => {
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white font-bold">IP</span>
+            <span className="text-white font-bold">TV</span>
           </div>
-          <span className="text-xl font-bold gradient-text">StreamifyTV</span>
+          <span className="text-xl font-bold gradient-text">TV905</span>
         </Link>
 
         {/* Desktop Navigation */}

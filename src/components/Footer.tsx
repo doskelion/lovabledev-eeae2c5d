@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -9,9 +8,9 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold">IP</span>
+                <span className="text-white font-bold">TV</span>
               </div>
-              <span className="text-xl font-bold gradient-text">StreamifyTV</span>
+              <span className="text-xl font-bold gradient-text">TV905</span>
             </Link>
             <p className="text-muted-foreground mb-4">
               Premium IPTV service with thousands of channels, movies, and shows.
@@ -112,7 +111,7 @@ const Footer = () => {
         
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-muted-foreground text-sm mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} StreamifyTV. All rights reserved.
+            &copy; {new Date().getFullYear()} TV905. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" alt="PayPal" className="h-6" />
