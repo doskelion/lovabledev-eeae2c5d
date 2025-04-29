@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+const API_URL = "http://YOUR_API_SERVER_ADDRESS"; // Replace with your actual API server address
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,28 +24,28 @@ const Login = () => {
     setError("");
     
     try {
-      // Get users from localStorage
-      const usersJSON = localStorage.getItem("users");
-      const users = usersJSON ? JSON.parse(usersJSON) : [];
+      // Call the API instead of using localStorage
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: "include" // This is important for cookies if you use them
+      });
       
-      // Find user with matching email
-      const user = users.find((u: any) => u.email === email);
+      const data = await response.json();
       
-      if (!user) {
-        setError("No account found with this email");
-        setIsLoading(false);
-        return;
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to login");
       }
       
-      if (user.password !== password) {
-        setError("Incorrect password");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Set current user in localStorage (without password)
-      const { password: _, ...userWithoutPassword } = user;
-      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
+      // Store user token in localStorage for session management
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("currentUser", JSON.stringify({
+        id: data.user.id,
+        email: data.user.email
+      }));
       
       // Success notification and redirect
       toast({
@@ -52,8 +54,8 @@ const Login = () => {
       });
       
       navigate("/");
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "An error occurred. Please try again.");
       console.error("Login error:", err);
     } finally {
       setIsLoading(false);

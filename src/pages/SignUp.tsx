@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+const API_URL = "http://YOUR_API_SERVER_ADDRESS"; // Replace with your actual API server address
+
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,30 +36,20 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      // Get existing users from localStorage
-      const usersJSON = localStorage.getItem("users");
-      const users = usersJSON ? JSON.parse(usersJSON) : [];
+      // Call the API instead of using localStorage
+      const response = await fetch(`${API_URL}/api/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
       
-      // Check if user already exists
-      const existingUser = users.find((user: any) => user.email === email);
+      const data = await response.json();
       
-      if (existingUser) {
-        setError("User with this email already exists");
-        setIsLoading(false);
-        return;
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create account");
       }
-      
-      // Create new user
-      const newUser = {
-        id: Date.now().toString(),
-        email,
-        password,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Add to users array and save
-      users.push(newUser);
-      localStorage.setItem("users", JSON.stringify(users));
       
       // Success notification
       toast({
@@ -67,8 +59,8 @@ const SignUp = () => {
       
       // Redirect to login page
       navigate("/login");
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "An error occurred. Please try again.");
       console.error("Signup error:", err);
     } finally {
       setIsLoading(false);

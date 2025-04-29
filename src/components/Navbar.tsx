@@ -1,8 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, LogOut, User } from 'lucide-react';
+
+const API_URL = "http://YOUR_API_SERVER_ADDRESS"; // Replace with your actual API server address
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,20 +13,64 @@ const Navbar = () => {
   useEffect(() => {
     // Check if user is logged in
     const userJSON = localStorage.getItem('currentUser');
-    if (userJSON) {
+    const authToken = localStorage.getItem('authToken');
+    
+    if (userJSON && authToken) {
       setCurrentUser(JSON.parse(userJSON));
+      validateToken(authToken);
     }
   }, []);
+  
+  // Validate the token with the server
+  const validateToken = async (token: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/validate-token`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        // Token is invalid, log the user out
+        handleLogout();
+      }
+    } catch (error) {
+      console.error('Error validating token:', error);
+      // On error, keep the user logged in, but log the error
+    }
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
   
-  const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    setCurrentUser(null);
-    setIsMenuOpen(false);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        // Call logout API to invalidate the token on the server
+        await fetch(`${API_URL}/api/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      // Always clear local storage even if API fails
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      setCurrentUser(null);
+      setIsMenuOpen(false);
+      navigate('/');
+    }
   };
 
   return (
