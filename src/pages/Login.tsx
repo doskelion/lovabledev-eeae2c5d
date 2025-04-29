@@ -12,22 +12,52 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Get users from localStorage
+      const usersJSON = localStorage.getItem("users");
+      const users = usersJSON ? JSON.parse(usersJSON) : [];
+      
+      // Find user with matching email
+      const user = users.find((u: any) => u.email === email);
+      
+      if (!user) {
+        setError("No account found with this email");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (user.password !== password) {
+        setError("Incorrect password");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Set current user in localStorage (without password)
+      const { password: _, ...userWithoutPassword } = user;
+      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
+      
+      // Success notification and redirect
       toast({
         title: "Logged in",
         description: "You have been logged in successfully!",
       });
+      
       navigate("/");
-    }, 1500);
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Login error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -44,6 +74,12 @@ const Login = () => {
           </div>
           
           <div className="bg-card rounded-lg p-6 border border-border">
+            {error && (
+              <div className="bg-destructive/10 text-destructive p-3 rounded-md mb-4 text-sm">
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

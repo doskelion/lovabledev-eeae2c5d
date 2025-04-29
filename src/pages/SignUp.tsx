@@ -13,32 +13,66 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     
     if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match",
-        variant: "destructive"
-      });
+      setError("Passwords don't match");
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
     
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Get existing users from localStorage
+      const usersJSON = localStorage.getItem("users");
+      const users = usersJSON ? JSON.parse(usersJSON) : [];
+      
+      // Check if user already exists
+      const existingUser = users.find((user: any) => user.email === email);
+      
+      if (existingUser) {
+        setError("User with this email already exists");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Create new user
+      const newUser = {
+        id: Date.now().toString(),
+        email,
+        password,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Add to users array and save
+      users.push(newUser);
+      localStorage.setItem("users", JSON.stringify(users));
+      
+      // Success notification
       toast({
         title: "Account created",
-        description: "Your account has been created successfully!",
+        description: "Your account has been created successfully! Please log in.",
       });
+      
+      // Redirect to login page
       navigate("/login");
-    }, 1500);
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Signup error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,6 +89,12 @@ const SignUp = () => {
           </div>
           
           <div className="bg-card rounded-lg p-6 border border-border">
+            {error && (
+              <div className="bg-destructive/10 text-destructive p-3 rounded-md mb-4 text-sm">
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -78,6 +118,9 @@ const SignUp = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Password must be at least 6 characters
+                </p>
               </div>
               
               <div className="space-y-2">
